@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:recipemanagement/models/recipe_model.dart';
+import 'package:recipemanagement/services/recipe_api_service.dart';
 import 'step_execution_page.dart';
 
 class RecipeExecutionPage extends StatefulWidget {
@@ -14,10 +15,21 @@ class _RecipeExecutionPageState extends State<RecipeExecutionPage> {
   @override
   void initState() {
     super.initState();
-   // loadRecipes();
+    loadRecipes();
   }
 
+  Future<void> loadRecipes() async {
+    final api = RecipeApiService();
 
+    try {
+      final recipes = await api.getAllRecipes();
+      setState(() {
+        allRecipes = recipes;
+      });
+    } catch (e) {
+      print('Error loading recipes: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,12 +50,15 @@ class _RecipeExecutionPageState extends State<RecipeExecutionPage> {
               DropdownButton<RecipeModel>(
                 value: selectedRecipe,
                 hint: const Text('Select a Recipe'),
-                items: allRecipes
-                    .map((r) => DropdownMenuItem(
-                          value: r,
-                          child: Text('${r.name} - ${r.description}'),
-                        ))
-                    .toList(),
+                items:
+                    allRecipes
+                        .map(
+                          (r) => DropdownMenuItem(
+                            value: r,
+                            child: Text('${r.name} - ${r.description}'),
+                          ),
+                        )
+                        .toList(),
                 onChanged: (value) {
                   setState(() => selectedRecipe = value);
                 },
@@ -54,18 +69,21 @@ class _RecipeExecutionPageState extends State<RecipeExecutionPage> {
                 SizedBox(
                   height: 250,
                   child: PageView(
-                    children: selectedRecipe!.images
-                        .map((img) => Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.asset(
-                                  img as String,
-                                  fit: BoxFit.cover,
+                    children:
+                        selectedRecipe!.images
+                            .map(
+                              (img) => Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.asset(
+                                    img as String,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
-                            ))
-                        .toList(),
+                            )
+                            .toList(),
                   ),
                 ),
 
@@ -73,12 +91,15 @@ class _RecipeExecutionPageState extends State<RecipeExecutionPage> {
                 Padding(
                   padding: const EdgeInsets.only(top: 30.0),
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.amber),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                    ),
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => StepExecutionPage(recipe: selectedRecipe!),
+                          builder:
+                              (_) => StepExecutionPage(recipe: selectedRecipe!),
                         ),
                       );
                     },
