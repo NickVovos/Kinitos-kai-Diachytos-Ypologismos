@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:recipemanagement/pages/recipe_management_page.dart';
 import 'pages/home_page.dart';
 import 'pages/recipe_edit_page.dart';
 
@@ -18,8 +19,7 @@ class MyApp extends StatelessWidget {
       home: HomePage(), // Home is specified here
       routes: {
         '/recipeEdit': (context) => RecipeEditPage(),
-        // You can add other routes like:
-        // '/recipeManagement': (context) => RecipeManagementPage(),
+          '/recipeManagement': (context) => RecipeManagementPage(),
         // '/recipeExecution': (context) => RecipeExecutionPage(),
       },
     );
