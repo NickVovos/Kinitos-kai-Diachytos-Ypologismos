@@ -1,18 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-
-class Recipe {
-  final int id;
-  final String name;
-  final String category;
-  final String description;
-
-  Recipe({
-    required this.id,
-    required this.name,
-    required this.category,
-    required this.description,
-  });
-}
+import 'package:http/http.dart' as http;
+import '../models/recipe_model.dart'; // Adjust path to match your project
 
 class RecipeManagementPage extends StatefulWidget {
   @override
@@ -20,60 +9,85 @@ class RecipeManagementPage extends StatefulWidget {
 }
 
 class _RecipeManagementPageState extends State<RecipeManagementPage> {
-  List<Recipe> recipes = [
-    Recipe(id: 1, name: 'Spaghetti Carbonara', category: 'Dinner', description: 'Classic Italian pasta dish'),
-    Recipe(id: 2, name: 'Pancakes', category: 'Breakfast', description: 'Fluffy pancakes with syrup'),
-    Recipe(id: 3, name: 'Greek Salad', category: 'Lunch', description: 'Fresh veggies and feta cheese'),
-  ];
-
+  List<RecipeModel> recipes = [];
   String searchTerm = '';
   String selectedCategory = 'All';
-  Recipe? recipeToDelete;
+  RecipeModel? recipeToDelete;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchRecipes();
+  }
+
+  Future<void> fetchRecipes() async {
+    final uri = Uri.parse('https://20250406recipesapi.azurewebsites.net/api/Recipe');
+    final response = await http.get(uri);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      setState(() {
+        recipes = data.map((json) => RecipeModel(
+          id: json['id'],
+          name: json['title'],
+          description: json['description'],
+          images: [], // Placeholder, adapt if API returns image URLs
+          steps: [],  // Populate if needed
+        )).toList();
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to fetch recipes')),
+      );
+    }
+  }
+
+  Future<void> deleteRecipe() async {
+    if (recipeToDelete == null) return;
+
+    final uri = Uri.parse('https://20250406recipesapi.azurewebsites.net/api/Recipe/${recipeToDelete!.id}');
+    final response = await http.delete(uri);
+
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      setState(() {
+        recipes.removeWhere((r) => r.id == recipeToDelete!.id);
+        recipeToDelete = null;
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to delete recipe')),
+      );
+    }
+  }
+
+  void cancelDelete() {
+    setState(() => recipeToDelete = null);
+  }
+
+  void executeRecipe(RecipeModel recipe) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Executing ${recipe.name}')));
+  }
+
+  void editRecipe(RecipeModel recipe) {
+    Navigator.pushNamed(context, '/recipeEdit', arguments: recipe.id);
+  }
 
   List<String> get categoryOptions {
-    final categories = recipes.map((r) => r.category).toSet().toList();
+    final categories = recipes.map((r) => r.name).toSet().toList();
     categories.sort();
     return ['All', ...categories];
   }
 
-  List<Recipe> get filteredRecipes {
+  List<RecipeModel> get filteredRecipes {
     return recipes.where((r) {
       final matchesSearch = searchTerm.isEmpty ||
           r.name.toLowerCase().contains(searchTerm.toLowerCase()) ||
           r.description.toLowerCase().contains(searchTerm.toLowerCase());
 
-      final matchesCategory = selectedCategory == 'All' || r.category == selectedCategory;
+      final matchesCategory = selectedCategory == 'All' || r.name == selectedCategory;
 
       return matchesSearch && matchesCategory;
     }).toList();
-  }
-
-  void confirmDelete(Recipe recipe) {
-    setState(() {
-      recipeToDelete = recipe;
-    });
-  }
-
-  void deleteRecipe() {
-    setState(() {
-      recipes.removeWhere((r) => r.id == recipeToDelete!.id);
-      recipeToDelete = null;
-    });
-  }
-
-  void cancelDelete() {
-    setState(() {
-      recipeToDelete = null;
-    });
-  }
-
-  void executeRecipe(Recipe recipe) {
-    // Navigate to step execution page (stubbed)
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Executing ${recipe.name}')));
-  }
-
-  void editRecipe(Recipe recipe) {
-    Navigator.pushNamed(context, '/recipeEdit'); // You can pass recipe ID with arguments if needed
   }
 
   @override
@@ -84,7 +98,6 @@ class _RecipeManagementPageState extends State<RecipeManagementPage> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Heading
             const Text(
               'Recipe Management Dashboard',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -96,7 +109,6 @@ class _RecipeManagementPageState extends State<RecipeManagementPage> {
             ),
             const SizedBox(height: 16),
 
-            // Search and Filter
             Row(
               children: [
                 Expanded(
@@ -115,7 +127,7 @@ class _RecipeManagementPageState extends State<RecipeManagementPage> {
                   child: DropdownButtonFormField<String>(
                     value: selectedCategory,
                     decoration: const InputDecoration(
-                      labelText: 'Filter by Category',
+                      labelText: 'Filter by Name',
                       border: OutlineInputBorder(),
                     ),
                     items: categoryOptions
@@ -131,7 +143,6 @@ class _RecipeManagementPageState extends State<RecipeManagementPage> {
             ),
             const SizedBox(height: 16),
 
-            // Recipe List
             Expanded(
               child: ListView.builder(
                 itemCount: filteredRecipes.length,
@@ -141,7 +152,7 @@ class _RecipeManagementPageState extends State<RecipeManagementPage> {
                     margin: const EdgeInsets.symmetric(vertical: 8),
                     child: ListTile(
                       title: Text(recipe.name),
-                      subtitle: Text('${recipe.category} • ${recipe.description}'),
+                      subtitle: Text(recipe.description),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -154,11 +165,8 @@ class _RecipeManagementPageState extends State<RecipeManagementPage> {
                             child: const Text('Edit'),
                           ),
                           TextButton(
-                            onPressed: () => confirmDelete(recipe),
-                            child: const Text(
-                              'Delete',
-                              style: TextStyle(color: Colors.red),
-                            ),
+                            onPressed: () => setState(() => recipeToDelete = recipe),
+                            child: const Text('Delete', style: TextStyle(color: Colors.red)),
                           ),
                         ],
                       ),
@@ -168,25 +176,13 @@ class _RecipeManagementPageState extends State<RecipeManagementPage> {
               ),
             ),
 
-            // Delete Confirmation Modal
             if (recipeToDelete != null)
               AlertDialog(
                 title: const Text('Delete Recipe'),
-                content: Text(
-                  'Are you sure you want to delete "${recipeToDelete!.name}"? This action cannot be undone.',
-                ),
+                content: Text('Are you sure you want to delete "${recipeToDelete!.name}"? This action cannot be undone.'),
                 actions: [
-                  TextButton(
-                    onPressed: cancelDelete,
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: deleteRecipe,
-                    child: const Text(
-                      'Delete',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ),
+                  TextButton(onPressed: cancelDelete, child: const Text('Cancel')),
+                  TextButton(onPressed: deleteRecipe, child: const Text('Delete', style: TextStyle(color: Colors.red))),
                 ],
               ),
           ],
