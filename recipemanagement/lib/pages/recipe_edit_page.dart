@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -46,26 +47,50 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
     }
   }
 
-  void submitRecipe() async {
+    Future<void> submitRecipe() async {
     if (_formKey.currentState!.validate()) {
       final api = RecipeApiService();
 
+      // Convert recipe images to base64
+      final List<String> encodedRecipeImages = [];
+      for (var file in recipeImages) {
+        final bytes = await file.readAsBytes();
+        encodedRecipeImages.add(base64Encode(bytes));
+      }
+
+      // Prepare step data with base64 images
       final recipeJson = {
-        "title": titleController.text,
-        "category": selectedCategory == 'Other'
+        "id": 0,
+        "name": titleController.text,
+        "categoryName": selectedCategory == 'Other'
             ? newCategoryController.text
             : selectedCategory,
+        "difficulty": _difficultyToInt(selectedDifficulty),
         "description": descriptionController.text,
-        "difficulty": selectedDifficulty,
-        "steps": steps.map((s) => {
-          "title": s.title,
-          "description": s.description,
-          "duration": s.duration,
-          "ingredients": s.ingredients.map((i) => {
-            "name": i.name,
-            "quantity": i.quantity,
-          }).toList(),
+        "steps": steps.asMap().entries.map((entry) {
+          final i = entry.key;
+          final s = entry.value;
+
+          // Convert step images to base64
+          final List<String>? encodedStepImages = s.images?.map((imgBytes) {
+            return base64Encode(imgBytes);
+          }).toList();
+
+          return {
+            "id": 0,
+            "title": s.title,
+            "description": s.description,
+            "order": i + 1,
+            "duration": s.duration,
+            "ingredients": s.ingredients.map((i) => {
+              "quantity": i.quantity,
+              "name": i.name
+            }).toList(),
+            "images": encodedStepImages
+          };
         }).toList(),
+        "images": encodedRecipeImages,
+        "categories": null,
       };
 
       final success = await api.createRecipe(recipeJson);
@@ -81,8 +106,21 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
       );
 
       if (success) {
-        Navigator.pop(context); // Go back or clear form
+        Navigator.pop(context);
       }
+    }
+  }
+
+  int _difficultyToInt(String? difficulty) {
+    switch (difficulty) {
+      case 'Easy':
+        return 0;
+      case 'Medium':
+        return 1;
+      case 'Difficult':
+        return 2;
+      default:
+        return 0;
     }
   }
 

@@ -12,13 +12,15 @@ class RecipeApiService {
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonList = jsonDecode(response.body);
-      return jsonList.map((json) => RecipeModel(
-        id: json['id'],
-        name: json['title'],
-        description: json['description'],
-        images: [], // API doesn't return images for now
-        steps: [],  // Simplified; fill if needed
-      )).toList();
+      return jsonList.map((json) {
+        return RecipeModel(
+          id:  json['id'] ?? 0,
+          name: json['name']?.toString() ?? 'Untitled',
+          description: json['description']?.toString() ?? '',
+          images: [],
+          steps: [],
+        );
+      }).toList();
     } else {
       throw Exception('Failed to fetch recipes: ${response.statusCode}');
     }
