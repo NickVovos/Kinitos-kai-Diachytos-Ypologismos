@@ -20,7 +20,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
   final TextEditingController descriptionController = TextEditingController();
 
   List<String> categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert'];
-  String? selectedCategory;
+  String selectedCategory='Breakfast';
   String? selectedDifficulty;
 
   List<StepModel> steps = [];
@@ -85,7 +85,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
                       value: selectedCategory,
                       onChanged: (value) {
                         setState(() {
-                          selectedCategory = value;
+                          selectedCategory = value!;
                         });
                       },
                       validator:
