@@ -1,1 +1,67 @@
 .vscode/
+# Flutter/Dart/Pub related
+.dart_tool/
+.packages
+.pub-cache/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.melos_tool/
+.pubspec.lock
+
+# Generated plugin registrant
+.dart_tool/flutter_build/
+
+# Web-related
+lib/generated_plugin_registrant.dart
+
+# IntelliJ related
+*.iml
+.idea/
+
+# VS Code related
+.vscode/
+
+# macOS
+macos/Flutter/ephemeral/
+
+# iOS
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/ephemeral/
+ios/.symlinks/
+ios/Pods/
+ios/Podfile.lock
+ios/Runner.xcworkspace/
+
+# Android
+android/.gradle/
+android/app/build/
+android/gradle/
+android/local.properties
+
+# Windows
+windows/flutter/ephemeral/
+
+# Linux
+linux/flutter/ephemeral/
+
+# Coverage
+coverage/
+
+# Web
+web/.dart_tool/
+
+# Others
+*.log
+*.tmp
+*.lock
+*.swp
+*.swo
+
+# Firebase crashlytics/symbols
+app.*.symbols
+
+# Files created by Android Studio or VS Code when opening Flutter projects
+.metadata
