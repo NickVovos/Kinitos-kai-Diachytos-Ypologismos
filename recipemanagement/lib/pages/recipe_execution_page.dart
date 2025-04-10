@@ -14,30 +14,10 @@ class _RecipeExecutionPageState extends State<RecipeExecutionPage> {
   @override
   void initState() {
     super.initState();
-    loadRecipes();
+   // loadRecipes();
   }
 
-  void loadRecipes() {
-    // Replace this with your DB/API call
-    setState(() {
-      allRecipes = [
-        RecipeModel(
-          id: 1,
-          name: 'Spaghetti Carbonara',
-          description: 'Creamy pasta with pancetta',
-          images: ['assets/images/carbonara1.jpg', 'assets/images/carbonara2.jpg'],
-          steps: [],
-        ),
-        RecipeModel(
-          id: 2,
-          name: 'Greek Salad',
-          description: 'Fresh veggies with feta',
-          images: ['assets/images/salad.jpg'],
-          steps: [],
-        ),
-      ];
-    });
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +60,7 @@ class _RecipeExecutionPageState extends State<RecipeExecutionPage> {
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(12),
                                 child: Image.asset(
-                                  img,
+                                  img as String,
                                   fit: BoxFit.cover,
                                 ),
                               ),

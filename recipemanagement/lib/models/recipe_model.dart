@@ -1,9 +1,14 @@
+import 'package:recipemanagement/models/recipe_image.dart';
+import 'package:recipemanagement/models/step_model.dart';
+
 class RecipeModel {
   final int id;
   final String name;
   final String description;
-  final List<String> images;
-  final List<RecipeStep> steps;
+  final List<RecipeImage> images;
+  final List<StepModel> steps;
+  final String categoryName;
+  final int difficulty;
 
   RecipeModel({
     required this.id,
@@ -11,28 +16,25 @@ class RecipeModel {
     required this.description,
     required this.images,
     required this.steps,
+    required this.categoryName,
+    required this.difficulty,
   });
-}
 
-class RecipeStep {
-  final String title;
-  final String description;
-  final int duration;
-  final List<String> images;
-  final List<StepIngredient> ingredients;
-
-  RecipeStep({
-    required this.title,
-    required this.description,
-    required this.duration,
-    required this.images,
-    required this.ingredients,
-  });
-}
-
-class StepIngredient {
-  final String name;
-  final String quantity;
-
-  StepIngredient({required this.name, required this.quantity});
+  factory RecipeModel.fromJson(Map<String, dynamic> json) {
+    return RecipeModel(
+      id: json['id'],
+      name: json['name'],
+      description: json['description'],
+      categoryName: json['categoryName'], // ✅ correct key
+      difficulty: json['difficulty'],
+      images: (json['images'] as List<dynamic>?)
+              ?.map((img) => RecipeImage.fromJson(img))
+              .toList() ??
+          [],
+      steps: (json['steps'] as List<dynamic>?)
+              ?.map((step) => StepModel.fromJson(step))
+              .toList() ??
+          [],
+    );
+  }
 }

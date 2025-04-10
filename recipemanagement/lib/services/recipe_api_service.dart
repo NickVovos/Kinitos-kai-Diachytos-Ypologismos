@@ -19,6 +19,8 @@ class RecipeApiService {
           description: json['description']?.toString() ?? '',
           images: [],
           steps: [],
+          difficulty: 0,
+          categoryName: '',
         );
       }).toList();
     } else {
@@ -45,5 +47,17 @@ class RecipeApiService {
     );
 
     return response.statusCode == 200 || response.statusCode == 201;
+  }
+
+   Future<RecipeModel> getRecipeById(int id) async {
+    final url = Uri.parse('$_baseUrl/$id');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body);
+      return RecipeModel.fromJson(jsonData);
+    } else {
+      throw Exception('Failed to load recipe with id $id');
+    }
   }
 }

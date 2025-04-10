@@ -59,7 +59,11 @@ class _RecipeManagementPageState extends State<RecipeManagementPage> {
   }
 
   void editRecipe(RecipeModel recipe) {
-    Navigator.pushNamed(context, '/recipeEdit', arguments: recipe.id);
+    Navigator.pushNamed(
+      context,
+      '/recipeEdit',
+      arguments: recipe.id, // Passing only the ID
+    );
   }
 
   List<String> get categoryOptions {

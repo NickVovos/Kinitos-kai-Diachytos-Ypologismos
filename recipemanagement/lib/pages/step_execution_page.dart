@@ -57,16 +57,16 @@ final durationProgress = steps.isNotEmpty
                     ),
                     const SizedBox(height: 16),
 
-                    if (currentStep.images.isNotEmpty)
+                    if (currentStep.images!.isNotEmpty)
                       SizedBox(
                         height: 200,
                         child: PageView(
                           children: currentStep.images
-                              .map((img) => Padding(
+                              !.map((img) => Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(8),
-                                      child: Image.asset(img, fit: BoxFit.cover),
+                                      child: Image.asset(img as String, fit: BoxFit.cover),
                                     ),
                                   ))
                               .toList(),

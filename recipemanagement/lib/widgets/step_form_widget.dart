@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:recipemanagement/models/recipe_image.dart';
 import 'package:recipemanagement/widgets/ingredient_form_widget.dart';
 import '../models/step_model.dart';
 import '../models/ingredient_model.dart';
@@ -52,9 +54,20 @@ class _StepFormWidgetState extends State<StepFormWidget> {
     final picker = ImagePicker();
     final picked = await picker.pickMultiImage();
     if (picked != null) {
-      setState(() {
-        stepImages.addAll(picked);
-      });
+      for (final file in picked) {
+        final bytes = await file.readAsBytes();
+        final base64Data = base64Encode(bytes);
+
+        widget.step.images.add(
+          RecipeImage(
+            id: 0,
+            name: file.name,
+            data: base64Data,
+          ),
+        );
+      }
+
+      setState(() {}); // Refresh UI
     }
   }
 
@@ -128,31 +141,23 @@ class _StepFormWidgetState extends State<StepFormWidget> {
               onPressed: pickStepImages,
             ),
 
-            Wrap(
-              spacing: 8,
-              children: stepImages.map((img) {
-                return FutureBuilder<Uint8List>(
-                  future: img.readAsBytes(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done &&
-                        snapshot.hasData) {
-                      return Image.memory(
-                        snapshot.data!,
-                        width: 100,
-                        height: 100,
-                        fit: BoxFit.cover,
-                      );
-                    } else {
-                      return const SizedBox(
-                        width: 100,
-                        height: 100,
-                        child: Center(child: CircularProgressIndicator()),
-                      );
-                    }
-                  },
-                );
-              }).toList(),
-            ),
+            // ✅ Show images from widget.step.images (already base64)
+            if (widget.step.images.isNotEmpty)
+              Wrap(
+                spacing: 8,
+                children: widget.step.images.map((img) {
+                  try {
+                    return Image.memory(
+                      base64Decode(img.data),
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.cover,
+                    );
+                  } catch (_) {
+                    return const Icon(Icons.broken_image);
+                  }
+                }).toList(),
+              ),
 
             const SizedBox(height: 12),
             Center(
