@@ -312,12 +312,10 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
 
       // ✅ Convert full recipe with step images
       final recipeJson = {
-         "name": titleController.text,
-        // "categoryName": "Appetizer",
-        // "difficulty": 0,
-         "description": descriptionController.text,
+        "name": titleController.text,
+        "description": descriptionController.text,
         "categoryName": "Appetizer",
-        "difficulty": 0,
+        "difficulty": _difficultyToInt(selectedDifficulty),
         "steps": await Future.wait(
           steps.asMap().entries.map((entry) async {
             final i = entry.key;
