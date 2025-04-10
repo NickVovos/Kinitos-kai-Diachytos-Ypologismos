@@ -1,6 +1,7 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:recipemanagement/widgets/ingredient_form_widget.dart';
 import '../models/step_model.dart';
 import '../models/ingredient_model.dart';
 
@@ -68,15 +69,16 @@ class _StepFormWidgetState extends State<StepFormWidget> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Step ${widget.index + 1}',
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
+
             TextFormField(
               controller: titleController,
               decoration: const InputDecoration(labelText: 'Step Title'),
               onChanged: (val) => widget.step.title = val,
             ),
             const SizedBox(height: 8),
+
             TextFormField(
               controller: descriptionController,
               decoration: const InputDecoration(labelText: 'Description'),
@@ -84,6 +86,7 @@ class _StepFormWidgetState extends State<StepFormWidget> {
               onChanged: (val) => widget.step.description = val,
             ),
             const SizedBox(height: 8),
+
             TextFormField(
               controller: durationController,
               keyboardType: TextInputType.number,
@@ -100,35 +103,14 @@ class _StepFormWidgetState extends State<StepFormWidget> {
               final ingredient = entry.value;
               return Padding(
                 padding: const EdgeInsets.only(top: 6.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 5,
-                      child: TextFormField(
-                        initialValue: ingredient.name,
-                        decoration:
-                            const InputDecoration(hintText: 'Name'),
-                        onChanged: (val) => ingredient.name = val,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      flex: 4,
-                      child: TextFormField(
-                        initialValue: ingredient.quantity,
-                        decoration:
-                            const InputDecoration(hintText: 'Quantity'),
-                        onChanged: (val) => ingredient.quantity = val,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.remove_circle_outline),
-                      onPressed: () => removeIngredient(i),
-                    )
-                  ],
+                child: IngredientFormWidget(
+                  ingredient: ingredient,
+                  onRemove: () => removeIngredient(i),
+                  onNameChanged: (val) => ingredient.name = val,
+                  onQuantityChanged: (val) => ingredient.quantity = val,
                 ),
               );
-            }).toList(),
+            }),
             const SizedBox(height: 8),
             Align(
               alignment: Alignment.centerLeft,
@@ -145,16 +127,31 @@ class _StepFormWidgetState extends State<StepFormWidget> {
               label: const Text('Upload Step Images'),
               onPressed: pickStepImages,
             ),
+
             Wrap(
               spacing: 8,
-              children: stepImages
-                  .map((img) => Image.file(
-                        File(img.path),
+              children: stepImages.map((img) {
+                return FutureBuilder<Uint8List>(
+                  future: img.readAsBytes(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done &&
+                        snapshot.hasData) {
+                      return Image.memory(
+                        snapshot.data!,
                         width: 100,
                         height: 100,
                         fit: BoxFit.cover,
-                      ))
-                  .toList(),
+                      );
+                    } else {
+                      return const SizedBox(
+                        width: 100,
+                        height: 100,
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                  },
+                );
+              }).toList(),
             ),
 
             const SizedBox(height: 12),

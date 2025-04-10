@@ -1,9 +1,7 @@
-import 'dart:io';
-
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/step_model.dart';
-import '../models/ingredient_model.dart';
 import '../widgets/step_form_widget.dart';
 
 class RecipeEditPage extends StatefulWidget {
@@ -51,7 +49,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
 
   void submitRecipe() {
     if (_formKey.currentState!.validate()) {
-      // Submit logic here (e.g. save to DB or call API)
+      // Submit logic here
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Recipe submitted!')),
       );
@@ -134,15 +132,30 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
 
             Wrap(
               spacing: 8,
-              children: recipeImages
-                  .map((img) => Image.file(
-                        File(img.path),
+              children: recipeImages.map((img) {
+                return FutureBuilder<Uint8List>(
+                  future: img.readAsBytes(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done &&
+                        snapshot.hasData) {
+                      return Image.memory(
+                        snapshot.data!,
                         width: 100,
                         height: 100,
                         fit: BoxFit.cover,
-                      ))
-                  .toList(),
+                      );
+                    } else {
+                      return const SizedBox(
+                        width: 100,
+                        height: 100,
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                  },
+                );
+              }).toList(),
             ),
+
             const Divider(height: 32),
             const Text(
               'Steps',
@@ -150,17 +163,15 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
             ),
             const SizedBox(height: 8),
 
-            ...steps
-                .asMap()
-                .entries
-                .map((entry) => StepFormWidget(
-                      step: entry.value,
-                      index: entry.key,
-                      onRemove: () {
-                        setState(() => steps.removeAt(entry.key));
-                      },
-                    ))
-                .toList(),
+            ...steps.asMap().entries.map((entry) {
+              final i = entry.key;
+              final step = entry.value;
+              return StepFormWidget(
+                step: step,
+                index: i,
+                onRemove: () => setState(() => steps.removeAt(i)),
+              );
+            }),
 
             const SizedBox(height: 12),
             ElevatedButton.icon(
