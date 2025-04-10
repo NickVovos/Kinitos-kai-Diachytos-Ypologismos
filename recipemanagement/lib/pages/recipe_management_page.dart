@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '../models/recipe_model.dart'; // Adjust path to match your project
+import '../models/recipe_model.dart';
+import '../services/recipe_api_service.dart';
 
 class RecipeManagementPage extends StatefulWidget {
   @override
@@ -21,34 +22,23 @@ class _RecipeManagementPageState extends State<RecipeManagementPage> {
   }
 
   Future<void> fetchRecipes() async {
-    final uri = Uri.parse('https://20250406recipesapi.azurewebsites.net/api/Recipe');
-    final response = await http.get(uri);
+    final api = RecipeApiService();
+    final data = await api.getAllRecipes();
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      setState(() {
-        recipes = data.map((json) => RecipeModel(
-          id: json['id'],
-          name: json['title'],
-          description: json['description'],
-          images: [], // Placeholder, adapt if API returns image URLs
-          steps: [],  // Populate if needed
-        )).toList();
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to fetch recipes')),
-      );
-    }
+    if (!mounted) return;
+
+    setState(() {
+      recipes = data;
+    });
   }
 
   Future<void> deleteRecipe() async {
     if (recipeToDelete == null) return;
 
-    final uri = Uri.parse('https://20250406recipesapi.azurewebsites.net/api/Recipe/${recipeToDelete!.id}');
-    final response = await http.delete(uri);
+    final api = RecipeApiService();
+    final success = await api.deleteRecipe(recipeToDelete!.id);
 
-    if (response.statusCode == 200 || response.statusCode == 204) {
+    if (success) {
       setState(() {
         recipes.removeWhere((r) => r.id == recipeToDelete!.id);
         recipeToDelete = null;

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/step_model.dart';
 import '../widgets/step_form_widget.dart';
+import '../services/recipe_api_service.dart';
 
 class RecipeEditPage extends StatefulWidget {
   @override
@@ -14,16 +15,14 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
 
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController newCategoryController = TextEditingController();
 
   List<String> categories = ['Breakfast', 'Lunch', 'Dinner', 'Dessert'];
   String? selectedCategory;
   bool showNewCategoryInput = false;
-  final TextEditingController newCategoryController = TextEditingController();
-
   String? selectedDifficulty;
 
   List<StepModel> steps = [];
-
   List<XFile> recipeImages = [];
 
   void addStep() {
@@ -47,12 +46,43 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
     }
   }
 
-  void submitRecipe() {
+  void submitRecipe() async {
     if (_formKey.currentState!.validate()) {
-      // Submit logic here
+      final api = RecipeApiService();
+
+      final recipeJson = {
+        "title": titleController.text,
+        "category": selectedCategory == 'Other'
+            ? newCategoryController.text
+            : selectedCategory,
+        "description": descriptionController.text,
+        "difficulty": selectedDifficulty,
+        "steps": steps.map((s) => {
+          "title": s.title,
+          "description": s.description,
+          "duration": s.duration,
+          "ingredients": s.ingredients.map((i) => {
+            "name": i.name,
+            "quantity": i.quantity,
+          }).toList(),
+        }).toList(),
+      };
+
+      final success = await api.createRecipe(recipeJson);
+
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Recipe submitted!')),
+        SnackBar(
+          content: Text(success
+              ? 'Recipe submitted successfully!'
+              : 'Failed to submit recipe.'),
+        ),
       );
+
+      if (success) {
+        Navigator.pop(context); // Go back or clear form
+      }
     }
   }
 
@@ -74,8 +104,7 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
             TextFormField(
               controller: titleController,
               decoration: const InputDecoration(labelText: 'Title'),
-              validator: (value) =>
-                  value!.isEmpty ? 'Title is required' : null,
+              validator: (value) => value!.isEmpty ? 'Title is required' : null,
             ),
             const SizedBox(height: 16),
 
