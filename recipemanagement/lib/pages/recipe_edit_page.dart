@@ -32,11 +32,15 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
   @override
   Widget build(BuildContext context) {
     if (!isInitialized) {
-      final args = ModalRoute.of(context)!.settings.arguments;
+      final args = ModalRoute.of(context)?.settings.arguments;
       if (args is int) {
-        _fetchRecipeById(args);
-        isInitialized = true;
+        _fetchRecipeById(args); // Load recipe only if ID is provided
+      } else {
+        setState(() {
+          isLoading = false; // Just show empty form
+        });
       }
+      isInitialized = true;
     }
 
     return Scaffold(
@@ -218,25 +222,24 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
       categories.add(recipe.categoryName);
     }
 
-    // ✅ Decode recipe images from base64
     recipeImages =
         recipe.images.map((img) {
           final bytes = base64Decode(img.data);
           return XFile.fromData(bytes, name: img.name);
         }).toList();
 
-    // ✅ Just use the step images as they are (already RecipeImage objects)
-    steps = recipe.steps.map((s) {
-      return StepModel(
-        id: s.id,
-        title: s.title,
-        description: s.description,
-        duration: s.duration,
-        order: s.order,
-        ingredients: s.ingredients,
-        images: s.images, // ✅ Already a List<RecipeImage>
-      );
-    }).toList();
+    steps =
+        recipe.steps.map((s) {
+          return StepModel(
+            id: s.id,
+            title: s.title,
+            description: s.description,
+            duration: s.duration,
+            order: s.order,
+            ingredients: s.ingredients,
+            images: s.images,
+          );
+        }).toList();
   }
 
   int _difficultyToInt(String? difficulty) {
@@ -295,27 +298,39 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
     if (_formKey.currentState!.validate()) {
       final api = RecipeApiService();
 
-      final List<String> encodedRecipeImages = [];
+      // ✅ Convert recipe images
+      final List<Map<String, dynamic>> encodedRecipeImages = [];
       for (var file in recipeImages) {
         final bytes = await file.readAsBytes();
-        encodedRecipeImages.add(base64Encode(bytes));
+        final base64Data = base64Encode(bytes);
+        encodedRecipeImages.add({
+          "id": 0,
+          "name": file.name,
+          "data": base64Data,
+        });
       }
 
+      // ✅ Convert full recipe with step images
       final recipeJson = {
-        "id": 0,
-        "name": titleController.text,
-        "categoryName": selectedCategory,
-        "difficulty": _difficultyToInt(selectedDifficulty),
-        "description": descriptionController.text,
+         "name": titleController.text,
+        // "categoryName": "Appetizer",
+        // "difficulty": 0,
+         "description": descriptionController.text,
+        "categoryName": "Appetizer",
+        "difficulty": 0,
         "steps": await Future.wait(
           steps.asMap().entries.map((entry) async {
             final i = entry.key;
             final s = entry.value;
 
-            final List<String> encodedStepImages = [];
-            for (var img in s.images) {
-              encodedStepImages.add(img.data);
-            }
+            final List<Map<String, dynamic>> encodedStepImages =
+                s.images.map((img) {
+                  return {
+                    "id": img.id,
+                    "name": img.name,
+                    "data": img.data, // already base64
+                  };
+                }).toList();
 
             return {
               "id": s.id,
