@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:recipemanagement/models/recipe_image.dart';
 import '../models/step_model.dart';
 import '../models/recipe_model.dart';
 import '../widgets/step_form_widget.dart';
@@ -287,12 +286,10 @@ class _RecipeEditPageState extends State<RecipeEditPage> {
   Future<void> pickRecipeImages() async {
     final picker = ImagePicker();
     final pickedImages = await picker.pickMultiImage();
-    if (pickedImages != null) {
-      setState(() {
-        recipeImages.addAll(pickedImages);
-      });
+    setState(() {
+      recipeImages.addAll(pickedImages);
+    });
     }
-  }
 
   Future<void> submitRecipe() async {
     if (_formKey.currentState!.validate()) {

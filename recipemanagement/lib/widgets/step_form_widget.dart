@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:recipemanagement/models/recipe_image.dart';
@@ -53,23 +52,21 @@ class _StepFormWidgetState extends State<StepFormWidget> {
   Future<void> pickStepImages() async {
     final picker = ImagePicker();
     final picked = await picker.pickMultiImage();
-    if (picked != null) {
-      for (final file in picked) {
-        final bytes = await file.readAsBytes();
-        final base64Data = base64Encode(bytes);
+    for (final file in picked) {
+      final bytes = await file.readAsBytes();
+      final base64Data = base64Encode(bytes);
 
-        widget.step.images.add(
-          RecipeImage(
-            id: 0,
-            name: file.name,
-            data: base64Data,
-          ),
-        );
-      }
-
-      setState(() {}); // Refresh UI
+      widget.step.images.add(
+        RecipeImage(
+          id: 0,
+          name: file.name,
+          data: base64Data,
+        ),
+      );
     }
-  }
+
+    setState(() {}); // Refresh UI
+    }
 
   @override
   Widget build(BuildContext context) {
