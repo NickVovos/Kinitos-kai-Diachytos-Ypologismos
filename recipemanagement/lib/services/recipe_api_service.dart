@@ -3,9 +3,11 @@ import 'package:http/http.dart' as http;
 import '../models/recipe_model.dart';
 
 class RecipeApiService {
-  // static const String _baseUrl = 'http://localhost:5230/api/Recipe';
-  static const String _baseUrl =
-      'https://20250406recipesapi.azurewebsites.net/api/Recipe';
+  static const String _baseUrl = 'http://localhost:5230/api/Recipe';
+  static const String _baseUrlCat = 'http://localhost:5230/api/Category';
+
+  // static const String _baseUrl =
+  //     'https://20250406recipesapi.azurewebsites.net/api/Recipe';
 
   /// Fetch all recipes from the API
   Future<List<RecipeModel>> getAllRecipes() async {
@@ -73,5 +75,16 @@ class RecipeApiService {
     );
 
     return response.statusCode == 200;
+  }
+
+  Future<List<String>> getCategories() async {
+    final response = await http.get(Uri.parse(_baseUrlCat));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map<String>((item) => item['name'].toString()).toList();
+    } else {
+      throw Exception('Failed to load categories');
+    }
   }
 }
