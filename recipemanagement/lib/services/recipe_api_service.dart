@@ -20,7 +20,7 @@ class RecipeApiService {
           images: [],
           steps: [],
           difficulty: 0,
-          categoryName: '',
+          categoryName: json['categoryName']?.toString() ?? 'none',
         );
       }).toList();
     } else {

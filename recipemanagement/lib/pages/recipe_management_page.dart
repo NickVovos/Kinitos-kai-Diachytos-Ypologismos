@@ -42,9 +42,9 @@ class _RecipeManagementPageState extends State<RecipeManagementPage> {
         recipeToDelete = null;
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to delete recipe')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to delete recipe')));
     }
   }
 
@@ -53,7 +53,9 @@ class _RecipeManagementPageState extends State<RecipeManagementPage> {
   }
 
   void executeRecipe(RecipeModel recipe) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Executing ${recipe.name}')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Executing ${recipe.name}')));
   }
 
   void editRecipe(RecipeModel recipe) {
@@ -65,18 +67,20 @@ class _RecipeManagementPageState extends State<RecipeManagementPage> {
   }
 
   List<String> get categoryOptions {
-    final categories = recipes.map((r) => r.name).toSet().toList();
+    final categories = recipes.map((r) => r.categoryName).toSet().toList();
     categories.sort();
     return ['All', ...categories];
   }
 
   List<RecipeModel> get filteredRecipes {
     return recipes.where((r) {
-      final matchesSearch = searchTerm.isEmpty ||
+      final matchesSearch =
+          searchTerm.isEmpty ||
           r.name.toLowerCase().contains(searchTerm.toLowerCase()) ||
           r.description.toLowerCase().contains(searchTerm.toLowerCase());
 
-      final matchesCategory = selectedCategory == 'All' || r.name == selectedCategory;
+      final matchesCategory =
+          selectedCategory == 'All' || r.categoryName == selectedCategory;
 
       return matchesSearch && matchesCategory;
     }).toList();
@@ -119,16 +123,21 @@ class _RecipeManagementPageState extends State<RecipeManagementPage> {
                   child: DropdownButtonFormField<String>(
                     value: selectedCategory,
                     decoration: const InputDecoration(
-                      labelText: 'Filter by Name',
+                      labelText: 'Filter by Category',
                       border: OutlineInputBorder(),
                     ),
-                    items: categoryOptions
-                        .map((cat) => DropdownMenuItem(
-                              value: cat,
-                              child: Text(cat),
-                            ))
-                        .toList(),
-                    onChanged: (value) => setState(() => selectedCategory = value ?? 'All'),
+                    items:
+                        categoryOptions
+                            .map(
+                              (cat) => DropdownMenuItem(
+                                value: cat,
+                                child: Text(cat),
+                              ),
+                            )
+                            .toList(),
+                    onChanged:
+                        (value) =>
+                            setState(() => selectedCategory = value ?? 'All'),
                   ),
                 ),
               ],
@@ -157,8 +166,12 @@ class _RecipeManagementPageState extends State<RecipeManagementPage> {
                             child: const Text('Edit'),
                           ),
                           TextButton(
-                            onPressed: () => setState(() => recipeToDelete = recipe),
-                            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                            onPressed:
+                                () => setState(() => recipeToDelete = recipe),
+                            child: const Text(
+                              'Delete',
+                              style: TextStyle(color: Colors.red),
+                            ),
                           ),
                         ],
                       ),
@@ -171,10 +184,21 @@ class _RecipeManagementPageState extends State<RecipeManagementPage> {
             if (recipeToDelete != null)
               AlertDialog(
                 title: const Text('Delete Recipe'),
-                content: Text('Are you sure you want to delete "${recipeToDelete!.name}"? This action cannot be undone.'),
+                content: Text(
+                  'Are you sure you want to delete "${recipeToDelete!.name}"? This action cannot be undone.',
+                ),
                 actions: [
-                  TextButton(onPressed: cancelDelete, child: const Text('Cancel')),
-                  TextButton(onPressed: deleteRecipe, child: const Text('Delete', style: TextStyle(color: Colors.red))),
+                  TextButton(
+                    onPressed: cancelDelete,
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: deleteRecipe,
+                    child: const Text(
+                      'Delete',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
                 ],
               ),
           ],
