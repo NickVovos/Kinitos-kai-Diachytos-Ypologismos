@@ -3,7 +3,9 @@ import 'package:http/http.dart' as http;
 import '../models/recipe_model.dart';
 
 class RecipeApiService {
-  static const String _baseUrl = 'https://20250406recipesapi.azurewebsites.net/api/Recipe';
+  // static const String _baseUrl = 'http://localhost:5230/api/Recipe';
+  static const String _baseUrl =
+      'https://20250406recipesapi.azurewebsites.net/api/Recipe';
 
   /// Fetch all recipes from the API
   Future<List<RecipeModel>> getAllRecipes() async {
@@ -14,7 +16,7 @@ class RecipeApiService {
       final List<dynamic> jsonList = jsonDecode(response.body);
       return jsonList.map((json) {
         return RecipeModel(
-          id:  json['id'] ?? 0,
+          id: json['id'] ?? 0,
           name: json['name']?.toString() ?? 'Untitled',
           description: json['description']?.toString() ?? '',
           images: [],
@@ -49,7 +51,7 @@ class RecipeApiService {
     return response.statusCode == 200 || response.statusCode == 201;
   }
 
-   Future<RecipeModel> getRecipeById(int id) async {
+  Future<RecipeModel> getRecipeById(int id) async {
     final url = Uri.parse('$_baseUrl/$id');
     final response = await http.get(url);
 
@@ -59,5 +61,17 @@ class RecipeApiService {
     } else {
       throw Exception('Failed to load recipe with id $id');
     }
+  }
+
+  Future<bool> updateRecipe(int id, Map<String, dynamic> json) async {
+    final url = Uri.parse('$_baseUrl/$id');
+
+    final response = await http.put(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(json),
+    );
+
+    return response.statusCode == 200;
   }
 }
