@@ -3,11 +3,13 @@ import 'package:http/http.dart' as http;
 import '../models/recipe_model.dart';
 
 class RecipeApiService {
-  static const String _baseUrl = 'http://localhost:5230/api/Recipe';
-  static const String _baseUrlCat = 'http://localhost:5230/api/Category';
+  //static const String _baseUrl = 'http://localhost:5230/api/Recipe';
+ // static const String _baseUrlCat = 'http://localhost:5230/api/Category';
 
-  // static const String _baseUrl =
-  //     'https://20250406recipesapi.azurewebsites.net/api/Recipe';
+   static const String _baseUrl =
+       'https://20250406recipesapi.azurewebsites.net/api/Recipe';
+          static const String _baseUrlCat =
+       'https://20250406recipesapi.azurewebsites.net/api/Category';
 
   /// Fetch all recipes from the API
   Future<List<RecipeModel>> getAllRecipes() async {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:recipemanagement/pages/step_execution_page.dart';
 import '../models/recipe_model.dart';
 import '../services/recipe_api_service.dart';
 
@@ -52,11 +53,23 @@ class _RecipeManagementPageState extends State<RecipeManagementPage> {
     setState(() => recipeToDelete = null);
   }
 
-  void executeRecipe(RecipeModel recipe) {
-    ScaffoldMessenger.of(
+void executeRecipe(RecipeModel recipe) async {
+  final api = RecipeApiService();
+
+  try {
+    final fullRecipe = await api.getRecipeById(recipe.id);
+    Navigator.push(
       context,
-    ).showSnackBar(SnackBar(content: Text('Executing ${recipe.name}')));
+      MaterialPageRoute(
+        builder: (_) => StepExecutionPage(recipe: fullRecipe),
+      ),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Failed to load recipe details')),
+    );
   }
+}
 
   void editRecipe(RecipeModel recipe) {
     Navigator.pushNamed(
